@@ -295,7 +295,8 @@ public class Harvester : MonoBehaviour
 
     private void setIDsInRange()
     {
-        foreach(KeyValuePair<int,int> tile in range)
+        idsInRangeHarvested = new Dictionary<int, bool>();
+        foreach (KeyValuePair<int,int> tile in range)
         {
             try
             {

@@ -39,7 +39,6 @@ public class TitleCanvasHandler : MonoBehaviour
     }
     public void quit()
     {
-        UnityEditor.EditorApplication.isPlaying = false;
         Application.Quit();
     }
 }
