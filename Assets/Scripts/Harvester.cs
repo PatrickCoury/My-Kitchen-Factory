@@ -7,7 +7,7 @@ using UnityEngine;
 public class Harvester : MonoBehaviour
 {
 
-    private int rangeX, rangeY, rangeLvl = 3, speedLvl, qtyLvl, costLvl, invLvl;
+    private int rangeX, rangeY, rangeLvl = 3, speedLvl, qtyLvl, costLvl, invLvl = 3, invSize;
     public bool showRange;
     public GameObject tilePrefab;
     public KeyValuePair<int, int>[] range;
@@ -17,12 +17,13 @@ public class Harvester : MonoBehaviour
     private MainSceneHandler mainSceneHandler;
     private MapHandler mapHandler;
     private Dictionary<int,bool> idsInRangeHarvested;
-    private KeyValuePair<int, int>[] inventory;
+    private List<KeyValuePair<int, int>> inventory;
     // Start is called before the first frame update
     void Start()
     {
         mainSceneHandler = GameObject.Find("MainSceneHandler").GetComponent<MainSceneHandler>();
         lvlUp("range", rangeLvl);
+        lvlUp("inventory", invLvl);
         mapHandler = GameObject.Find("Map Handler").GetComponent<MapHandler>();
         tilePrefab = Resources.Load("Square") as GameObject;
         range = new KeyValuePair<int, int>[rangeX * rangeY];
@@ -243,6 +244,17 @@ public class Harvester : MonoBehaviour
                     break;
             }
         }
+        if (lvlType.ToLower() == "inventory")
+        {
+            invLvl = lvl;
+            invSize = 3 + (2 * lvl);
+            if (invSize > 9)
+                invSize = 9;
+            if (invLvl == 3)
+            {
+                invSize--;
+            }
+        }
     }
 
     private void timeTick()
@@ -319,6 +331,28 @@ public class Harvester : MonoBehaviour
 
     private void addToInventory(int ID, int amt)
     {
+        
+        for(int i = 0; i<inventory.Count;i++)
+        {
+            if(inventory[i].Key == ID)
+            {
+                ItemID tempItem = new ItemID(ID);
+                if(inventory[i].Value + amt > tempItem.getStackSize())
+                {
+                    if (inventory.Count < invSize)
+                    {
+                        inventory.Add(new KeyValuePair<int, int>(ID, (amt-(tempItem.getStackSize()-inventory[i].Value))));
+                    }
+                        inventory[i] = new KeyValuePair<int, int>(ID, tempItem.getStackSize());
+                    
 
+                }
+                else
+                    inventory[i] = new KeyValuePair<int, int>(ID, inventory[i].Value + amt);
+                return;
+            }
+        }
+        if (inventory.Count < invSize)
+            inventory.Add(new KeyValuePair<int, int>(ID, amt));
     }
 }
