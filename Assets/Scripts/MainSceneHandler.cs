@@ -298,8 +298,15 @@ public class MainSceneHandler : MonoBehaviour
             //left click
             if (Input.GetMouseButtonDown(0))
             {
-                if (hotbarSelectedButton >= 0)
-                    build(hotbarID[hotbarSelectedButton], cursorRotation, (int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
+                if (!EventSystem.current.IsPointerOverGameObject())
+                {
+                    if (mapHandler.buildMap[(int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y] != null)
+                    {
+                        openMenu(hoveredTile);
+                    }
+                    if (hotbarSelectedButton >= 0)
+                        build(hotbarID[hotbarSelectedButton], cursorRotation, (int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
+                }
             }
             //right click
             else if (Input.GetMouseButtonDown(1))
@@ -322,6 +329,18 @@ public class MainSceneHandler : MonoBehaviour
     public int getTileID(int x, int y)
     {
         return mapHandler.tileMap[x, y].getID();
+    }
+
+    public void openMenu(GameObject tile)
+    {
+        TileID buildTile = mapHandler.buildMap[(int)tile.transform.position.x, (int)tile.transform.position.y];
+        //GameObject buildTileInstance = mapHandler.instanceGrid[(int)tile.transform.position.x, (int)tile.transform.position.y];
+        switch (buildTile.getID())
+        {
+            case 30:
+                tile.GetComponent<Harvester>().openMenu();
+                break;
+        }
     }
 
 }

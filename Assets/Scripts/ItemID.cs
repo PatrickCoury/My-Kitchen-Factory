@@ -15,6 +15,9 @@ public class ItemID
         this.sprite = Resources.LoadAll<Sprite>("TileID")[ID];
         switch (ID)
         {
+            case 100:
+                this.name = "Cow Unit";
+                break;
             case 101:
                 this.name = "Prime Beef";
                 break;
@@ -24,6 +27,9 @@ public class ItemID
             case 103:
                 this.name = "Milk";
                 break;
+            case 200:
+                this.name = "Chicken Unit";
+                break;
             case 201:
                 this.name = "Chicken Breast";
                 break;
@@ -32,6 +38,9 @@ public class ItemID
                 break;
             case 203:
                 this.name = "Eggs";
+                break;
+            case 300:
+                this.name = "Pig Unit";
                 break;
             case 301:
                 this.name = "Pork Shoulder Butt";

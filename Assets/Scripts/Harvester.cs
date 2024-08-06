@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using System.Linq;
 
 
 //Contains the information for an attached harvester block
 public class Harvester : MonoBehaviour
 {
 
-    private int rangeX, rangeY, rangeLvl = 3, speedLvl, qtyLvl, costLvl, invLvl = 3, invSize;
+    private int rangeX, rangeY, rangeLvl = 3, speedLvl, qtyLvl, costLvl, invLvl = 3;
     public bool showRange;
     public GameObject tilePrefab;
     public KeyValuePair<int, int>[] range;
@@ -18,12 +20,13 @@ public class Harvester : MonoBehaviour
     private MapHandler mapHandler;
     private Dictionary<int,bool> idsInRangeHarvested;
     private List<KeyValuePair<int, int>> inventory;
+    private GameObject menuPrefab, menu;
     // Start is called before the first frame update
     void Start()
     {
         mainSceneHandler = GameObject.Find("MainSceneHandler").GetComponent<MainSceneHandler>();
         lvlUp("range", rangeLvl);
-        lvlUp("inventory", invLvl);
+        //lvlUp("inventory", invLvl);
         mapHandler = GameObject.Find("Map Handler").GetComponent<MapHandler>();
         tilePrefab = Resources.Load("Square") as GameObject;
         range = new KeyValuePair<int, int>[rangeX * rangeY];
@@ -38,6 +41,8 @@ public class Harvester : MonoBehaviour
                 mainSceneHandler.harvesterList.RemoveAt(i);
         }
         setIDsInRange();
+        menuPrefab = Resources.Load("HarvesterMenuPrefab") as GameObject;
+        inventory = new List<KeyValuePair<int, int>>();
     }
 
     // Update is called once per frame
@@ -247,20 +252,17 @@ public class Harvester : MonoBehaviour
         if (lvlType.ToLower() == "inventory")
         {
             invLvl = lvl;
-            invSize = 3 + (2 * lvl);
-            if (invSize > 9)
-                invSize = 9;
-            if (invLvl == 3)
-            {
-                invSize--;
-            }
         }
     }
 
     private void timeTick()
     {
         if (!harvestTime)
+        {
             harvestTimer++;
+            if (menu != null)
+                menu.GetComponentInChildren<Slider>().value = harvestTimer;
+        }
         else
             return;
         if (harvestTimer >= (720 - (120 * rangeLvl)))
@@ -295,14 +297,24 @@ public class Harvester : MonoBehaviour
                 int count = 0;
                 for(int i = 0; i < range.Length; i++)
                 {
-                    if(mapHandler.tileMap[range[i].Key, range[i].Value].getID()==harvestableTile.Key|| mapHandler.tileMap[range[i].Key, range[i].Value].getID() == harvestableTile.Key + 10)
+                    if(mapHandler.tileMap[range[i].Key, range[i].Value]!=null&&mapHandler.tileMap[range[i].Key, range[i].Value].getID()==harvestableTile.Key|| mapHandler.tileMap[range[i].Key, range[i].Value].getID() == harvestableTile.Key + 10)
                     {
                         count++;
                     }
                 }
                 addToInventory(harvestableTile.Key, count);
+                idsInRangeHarvested[harvestableTile.Key] = true;
+                break;
             }
         }
+        bool harvestLoopAND = true;
+        foreach (KeyValuePair<int, bool> harvestableTile in idsInRangeHarvested)
+            harvestLoopAND = harvestableTile.Value;
+        if (harvestLoopAND)
+            foreach (int key in idsInRangeHarvested.Keys.ToList<int>())
+                idsInRangeHarvested[key] = false;
+        harvestTime = false;
+        harvestTimer = 0;
     }
 
     private void setIDsInRange()
@@ -319,6 +331,10 @@ public class Harvester : MonoBehaviour
                 continue;
             }
         }
+        if (idsInRangeHarvested.ContainsKey(0))
+            idsInRangeHarvested.Remove(0);
+        if (idsInRangeHarvested.ContainsKey(4))
+            idsInRangeHarvested.Remove(4);
         if (idsInRangeHarvested.ContainsKey(11))
             idsInRangeHarvested.Remove(11);
         if (idsInRangeHarvested.ContainsKey(12))
@@ -329,30 +345,85 @@ public class Harvester : MonoBehaviour
             idsInRangeHarvested.Remove(15);
     }
 
-    private void addToInventory(int ID, int amt)
+    private void addToInventory(int tileID, int amt)
     {
-        
-        for(int i = 0; i<inventory.Count;i++)
+        int itemID;
+        switch (tileID)
         {
-            if(inventory[i].Key == ID)
-            {
-                ItemID tempItem = new ItemID(ID);
-                if(inventory[i].Value + amt > tempItem.getStackSize())
-                {
-                    if (inventory.Count < invSize)
-                    {
-                        inventory.Add(new KeyValuePair<int, int>(ID, (amt-(tempItem.getStackSize()-inventory[i].Value))));
-                    }
-                        inventory[i] = new KeyValuePair<int, int>(ID, tempItem.getStackSize());
-                    
-
-                }
+            case 1:
+                itemID = 100;
+                break;
+            case 2:
+                itemID = 200;
+                break;
+            case 3:
+                itemID = 300;
+                break;
+            case 5:
+                float rng = Random.Range(0f,1f);
+                if (rng < 0.34)
+                    itemID = 501;
+                else if (rng < 0.67)
+                    itemID = 502;
                 else
-                    inventory[i] = new KeyValuePair<int, int>(ID, inventory[i].Value + amt);
-                return;
+                    itemID = 503;
+                break;
+            default:
+                itemID = 100;
+                break;
+        }
+        bool containedInInventory = false;
+        int inventoryLocation = -1;
+            for (int i = 0; i < inventory.Count; i++)
+            {
+                if (inventory[i].Key == itemID)
+                {
+                    containedInInventory = true;
+                    inventoryLocation = i;
+                }
+            }
+        if (containedInInventory)
+        {
+            ItemID tempItem = new ItemID(itemID);
+            if (inventory[inventoryLocation].Value + amt > tempItem.getStackSize())
+            {
+                if (inventory.Count < invLvl)
+                {
+                    inventory.Add(new KeyValuePair<int, int>(itemID, (amt - (tempItem.getStackSize() - inventory[inventoryLocation].Value))));
+                }
+                inventory[inventoryLocation] = new KeyValuePair<int, int>(itemID, tempItem.getStackSize());
+
+
+            }
+            else
+                inventory[inventoryLocation] = new KeyValuePair<int, int>(itemID, inventory[inventoryLocation].Value + amt);
+            return;
+        }
+        else if (inventory.Count <= invLvl)
+            inventory.Add(new KeyValuePair<int, int>(itemID, amt));
+    }
+
+    public void openMenu()
+    {
+        if (menu == null)
+        {
+            menu = Instantiate(menuPrefab,GameObject.Find("Main UI").transform);
+            menu.GetComponentInChildren<Slider>().maxValue = 720 - (120 * rangeLvl);
+            menu.transform.Find("X Button").GetComponent<Button>().onClick.AddListener(() => closeMenu());
+            for (int i = 1; i <= 5; i++)
+            {
+                Transform temp = menu.transform.Find("Inventory Button " + i);
+                if (i > invLvl)
+                {
+                    temp.GetComponent<Button>().interactable = false;
+                    temp.GetComponent<Image>().color = new Color32(255, 0, 0, 255);
+                }
             }
         }
-        if (inventory.Count < invSize)
-            inventory.Add(new KeyValuePair<int, int>(ID, amt));
+    }
+
+    public void closeMenu()
+    {
+        Destroy(menu);
     }
 }
