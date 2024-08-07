@@ -92,4 +92,9 @@ public class ItemID
     {
         return stackSize;
     }
+
+    public Sprite getSprite()
+    {
+        return sprite;
+    }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System.Linq;
+using TMPro;
 
 
 //Contains the information for an attached harvester block
@@ -31,7 +32,7 @@ public class Harvester : MonoBehaviour
         tilePrefab = Resources.Load("Square") as GameObject;
         range = new KeyValuePair<int, int>[rangeX * rangeY];
         rangeInstance = new GameObject[rangeX * rangeY];
-        showRange = true;
+        showRange = false;
         setRange();
         harvestTimer = 0;
         harvestTime = false;
@@ -72,6 +73,8 @@ public class Harvester : MonoBehaviour
         }
         mainSceneHandler.harvesterList.Remove(gameObject);
         updateRanges();
+        if(menu!=null)
+            closeMenu();
     }
 
     private void setRange()
@@ -315,6 +318,8 @@ public class Harvester : MonoBehaviour
                 idsInRangeHarvested[key] = false;
         harvestTime = false;
         harvestTimer = 0;
+        if(menu!=null)
+            updateInvDisplay();
     }
 
     private void setIDsInRange()
@@ -410,6 +415,7 @@ public class Harvester : MonoBehaviour
             menu = Instantiate(menuPrefab,GameObject.Find("Main UI").transform);
             menu.GetComponentInChildren<Slider>().maxValue = 720 - (120 * rangeLvl);
             menu.transform.Find("X Button").GetComponent<Button>().onClick.AddListener(() => closeMenu());
+            menu.transform.Find("Display Range").GetComponent<Button>().onClick.AddListener(() => setShowRange());
             for (int i = 1; i <= 5; i++)
             {
                 Transform temp = menu.transform.Find("Inventory Button " + i);
@@ -419,6 +425,7 @@ public class Harvester : MonoBehaviour
                     temp.GetComponent<Image>().color = new Color32(255, 0, 0, 255);
                 }
             }
+            updateInvDisplay();
         }
     }
 
@@ -426,4 +433,26 @@ public class Harvester : MonoBehaviour
     {
         Destroy(menu);
     }
+
+    public void updateInvDisplay()
+    {
+        for (int i = 1; i <= 5; i++)
+            menu.transform.Find("Inventory Button " + i).GetChild(0).gameObject.SetActive(false);
+            for (int i = 1; i<=inventory.Count;i++)
+        {
+            ItemID tempItem = new ItemID(inventory[i-1].Key);
+            Transform display = menu.transform.Find("Inventory Button " + i).GetChild(0);
+            display.GetComponent<Image>().sprite = tempItem.getSprite();
+            display.GetChild(0).GetComponent<TextMeshProUGUI>().text = inventory[i-1].Value.ToString();
+            display.gameObject.SetActive(true);
+        }
+    }
+    private void setShowRange()
+    {
+        if (showRange)
+            foreach (GameObject rangeObject in rangeInstance)
+                Destroy(rangeObject);
+        showRange = !showRange;
+    }
+
 }
