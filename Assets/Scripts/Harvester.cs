@@ -300,10 +300,11 @@ public class Harvester : MonoBehaviour
                 int count = 0;
                 for(int i = 0; i < range.Length; i++)
                 {
-                    if(mapHandler.tileMap[range[i].Key, range[i].Value]!=null&&mapHandler.tileMap[range[i].Key, range[i].Value].getID()==harvestableTile.Key|| mapHandler.tileMap[range[i].Key, range[i].Value].getID() == harvestableTile.Key + 10)
-                    {
-                        count++;
-                    }
+                    if(range[i].Key >= 0)
+                        if(mapHandler.tileMap[range[i].Key, range[i].Value]!=null&&mapHandler.tileMap[range[i].Key, range[i].Value].getID()==harvestableTile.Key|| mapHandler.tileMap[range[i].Key, range[i].Value].getID() == harvestableTile.Key + 10)
+                        {
+                            count++;
+                        }
                 }
                 addToInventory(harvestableTile.Key, count);
                 idsInRangeHarvested[harvestableTile.Key] = true;
@@ -404,7 +405,7 @@ public class Harvester : MonoBehaviour
                 inventory[inventoryLocation] = new KeyValuePair<int, int>(itemID, inventory[inventoryLocation].Value + amt);
             return;
         }
-        else if (inventory.Count <= invLvl)
+        else if (inventory.Count < invLvl)
             inventory.Add(new KeyValuePair<int, int>(itemID, amt));
     }
 
@@ -437,14 +438,22 @@ public class Harvester : MonoBehaviour
     public void updateInvDisplay()
     {
         for (int i = 1; i <= 5; i++)
-            menu.transform.Find("Inventory Button " + i).GetChild(0).gameObject.SetActive(false);
-            for (int i = 1; i<=inventory.Count;i++)
         {
-            ItemID tempItem = new ItemID(inventory[i-1].Key);
-            Transform display = menu.transform.Find("Inventory Button " + i).GetChild(0);
-            display.GetComponent<Image>().sprite = tempItem.getSprite();
-            display.GetChild(0).GetComponent<TextMeshProUGUI>().text = inventory[i-1].Value.ToString();
-            display.gameObject.SetActive(true);
+            menu.transform.Find("Inventory Button " + i).GetChild(0).gameObject.SetActive(false);
+            menu.transform.Find("Inventory Button " + i).GetComponent<Button>().onClick.RemoveAllListeners();
+        }
+        for (int i = 1; i<=inventory.Count;i++)
+        {
+            if (inventory[i - 1].Value > 0)
+            {
+                ItemID tempItem = new ItemID(inventory[i - 1].Key);
+                Transform display = menu.transform.Find("Inventory Button " + i).GetChild(0);
+                display.GetComponent<Image>().sprite = tempItem.getSprite();
+                display.GetChild(0).GetComponent<TextMeshProUGUI>().text = inventory[i - 1].Value.ToString();
+                display.gameObject.SetActive(true);
+                int iCopy = i - 1;
+                menu.transform.Find("Inventory Button " + i).GetComponent<Button>().onClick.AddListener(() => slotLogic(iCopy));
+            }
         }
     }
     private void setShowRange()
@@ -453,6 +462,17 @@ public class Harvester : MonoBehaviour
             foreach (GameObject rangeObject in rangeInstance)
                 Destroy(rangeObject);
         showRange = !showRange;
+    }
+
+    public void slotLogic(int i)
+    {
+        KeyValuePair<int, int> temp = inventory[i];
+        inventory.RemoveAt(i);
+        inventory.Add(mainSceneHandler.sendToHands(temp));
+        for(i = 0; i<inventory.Count;i++)
+            if(inventory[i].Value==0)
+                inventory.RemoveAt(i);
+        updateInvDisplay();
     }
 
 }

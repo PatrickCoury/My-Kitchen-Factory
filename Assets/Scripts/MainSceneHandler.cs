@@ -24,12 +24,14 @@ public class MainSceneHandler : MonoBehaviour
     private GameObject[] hotbarButtons;
     public int[] hotbarID;
     private int hotbarSelectedButton = -1;
-    public GameObject hoveredTile;
+    public GameObject hoveredTile, hands;
     GameObject cursor;
     Sprite defaultCursor;
     public float cursorRotation = 0;
     public List<GameObject> harvesterList;
     private bool paused = false;
+    private KeyValuePair<int, int> itemInHands;
+    public bool handsFull = false;
     // Start is called before the first frame update
     void Start()
     {
@@ -210,18 +212,33 @@ public class MainSceneHandler : MonoBehaviour
     //changes cursor to selected hotbar item or default cursor
     public void setCursorSprite()
     {
-        if (hotbarSelectedButton >= 0)
+        if (handsFull)
         {
-            TileID tempTile = new TileID(hotbarID[hotbarSelectedButton], 0, 0, 0);
-            cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tempTile.getSprite();
-            cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color32(255, 255, 255, 155);
-            cursor.transform.GetChild(0).localPosition = new Vector3(0, 0, -19);
+            cursor.SetActive(false);
+            hands.SetActive(true);
+            hands.transform.position = Input.mousePosition / mainUI.scaleFactor;
+            ItemID tempItem = new ItemID(itemInHands.Key);
+            hands.GetComponent<Image>().sprite = tempItem.getSprite();
+            hands.GetComponentInChildren<TextMeshProUGUI>().text = itemInHands.Value.ToString();
+            hands.transform.SetAsLastSibling();
         }
         else
         {
-            cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = defaultCursor;
-            cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color32(196, 117, 220, 255);
-            cursor.transform.GetChild(0).localPosition = new Vector3(0, .75f, -19);
+            cursor.SetActive(true);
+            hands.SetActive(false);
+            if (hotbarSelectedButton >= 0)
+            {
+                TileID tempTile = new TileID(hotbarID[hotbarSelectedButton], 0, 0, 0);
+                cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = tempTile.getSprite();
+                cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color32(255, 255, 255, 155);
+                cursor.transform.GetChild(0).localPosition = new Vector3(0, 0, -19);
+            }
+            else
+            {
+                cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().sprite = defaultCursor;
+                cursor.transform.GetChild(0).GetComponent<SpriteRenderer>().color = new Color32(196, 117, 220, 255);
+                cursor.transform.GetChild(0).localPosition = new Vector3(0, .75f, -19);
+            }
         }
     }
 
@@ -247,6 +264,11 @@ public class MainSceneHandler : MonoBehaviour
             pause();
         }
 
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            playerHandler.openInventory();
+        }
+
         if (!paused)
         {
             //movement controls
@@ -269,50 +291,52 @@ public class MainSceneHandler : MonoBehaviour
             else if (Input.mouseScrollDelta.y > 0)
                 cameraHandler.setZoom(cameraHandler.getZoom() - 1);
             cameraHandler.move(playerHandler.actualX, playerHandler.actualY);
-
-            //hotbar controls
-            if (Input.GetKeyDown(KeyCode.Alpha1))
-                selectHotbarButton(1);
-            else if (Input.GetKeyDown(KeyCode.Alpha2))
-                selectHotbarButton(2);
-            else if (Input.GetKeyDown(KeyCode.Alpha3))
-                selectHotbarButton(3);
-            else if (Input.GetKeyDown(KeyCode.Alpha4))
-                selectHotbarButton(4);
-            else if (Input.GetKeyDown(KeyCode.Alpha5))
-                selectHotbarButton(5);
-            else if (Input.GetKeyDown(KeyCode.Alpha6))
-                selectHotbarButton(6);
-            else if (Input.GetKeyDown(KeyCode.Alpha7))
-                selectHotbarButton(7);
-            else if (Input.GetKeyDown(KeyCode.Alpha8))
-                selectHotbarButton(8);
-            else if (Input.GetKeyDown(KeyCode.Alpha9))
-                selectHotbarButton(9);
-            else if (Input.GetKeyDown(KeyCode.Alpha0))
-                selectHotbarButton(0);
-            //moves cursor over the hovered tile
-            if (hoveredTile != null)
-                cursor.transform.position = new Vector2(hoveredTile.transform.position.x, hoveredTile.transform.position.y);
-
-            //left click
-            if (Input.GetMouseButtonDown(0))
+            if (!handsFull)
             {
-                if (!EventSystem.current.IsPointerOverGameObject())
+                //hotbar controls
+                if (Input.GetKeyDown(KeyCode.Alpha1))
+                    selectHotbarButton(1);
+                else if (Input.GetKeyDown(KeyCode.Alpha2))
+                    selectHotbarButton(2);
+                else if (Input.GetKeyDown(KeyCode.Alpha3))
+                    selectHotbarButton(3);
+                else if (Input.GetKeyDown(KeyCode.Alpha4))
+                    selectHotbarButton(4);
+                else if (Input.GetKeyDown(KeyCode.Alpha5))
+                    selectHotbarButton(5);
+                else if (Input.GetKeyDown(KeyCode.Alpha6))
+                    selectHotbarButton(6);
+                else if (Input.GetKeyDown(KeyCode.Alpha7))
+                    selectHotbarButton(7);
+                else if (Input.GetKeyDown(KeyCode.Alpha8))
+                    selectHotbarButton(8);
+                else if (Input.GetKeyDown(KeyCode.Alpha9))
+                    selectHotbarButton(9);
+                else if (Input.GetKeyDown(KeyCode.Alpha0))
+                    selectHotbarButton(0);
+                //moves cursor over the hovered tile
+                if (hoveredTile != null)
+                    cursor.transform.position = new Vector2(hoveredTile.transform.position.x, hoveredTile.transform.position.y);
+
+                //left click
+                if (Input.GetMouseButtonDown(0))
                 {
-                    if (mapHandler.buildMap[(int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y] != null)
+                    if (!EventSystem.current.IsPointerOverGameObject())
                     {
-                        openMenu(hoveredTile);
+                        if (mapHandler.buildMap[(int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y] != null)
+                        {
+                            openMenu(hoveredTile);
+                        }
+                        if (hotbarSelectedButton >= 0)
+                            build(hotbarID[hotbarSelectedButton], cursorRotation, (int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
                     }
-                    if (hotbarSelectedButton >= 0)
-                        build(hotbarID[hotbarSelectedButton], cursorRotation, (int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
                 }
-            }
-            //right click
-            else if (Input.GetMouseButtonDown(1))
-            {
-                mapHandler.sellTile((int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
-            }
+                //right click
+                else if (Input.GetMouseButtonDown(1))
+                {
+                    mapHandler.sellTile((int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y);
+                }
+            
             //rotates a selected block
             if (Input.GetKeyDown(KeyCode.R))
             {
@@ -321,6 +345,20 @@ public class MainSceneHandler : MonoBehaviour
                     cursor.transform.GetChild(0).Rotate(0, 0, 90);
                     cursorRotation = cursor.transform.GetChild(0).rotation.eulerAngles.z;
 
+                }
+            }
+            }
+            else
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    if (!EventSystem.current.IsPointerOverGameObject())
+                    {
+                        if (mapHandler.buildMap[(int)hoveredTile.transform.position.x, (int)hoveredTile.transform.position.y] != null)
+                        {
+                            openMenu(hoveredTile);
+                        }
+                    }
                 }
             }
         }
@@ -340,6 +378,46 @@ public class MainSceneHandler : MonoBehaviour
             case 30:
                 tile.GetComponent<Harvester>().openMenu();
                 break;
+        }
+    }
+
+    public KeyValuePair<int,int> sendToHands(KeyValuePair<int,int> slotItem)
+    {
+        if (handsFull)
+        {
+            
+            if (slotItem.Key == itemInHands.Key)
+            {
+                ItemID tempItem = new ItemID(slotItem.Key);
+                if (slotItem.Value + itemInHands.Value > tempItem.getStackSize())
+                {
+                    itemInHands = new KeyValuePair<int, int>(itemInHands.Key, (slotItem.Value + itemInHands.Value - tempItem.getStackSize()));
+                    return new KeyValuePair<int, int>(slotItem.Key, tempItem.getStackSize());
+                }
+                else
+                {
+                    handsFull = false;
+                    return new KeyValuePair<int, int>(slotItem.Key, slotItem.Value + itemInHands.Value);
+                }
+            }
+            else
+            {
+                KeyValuePair<int, int> temp = itemInHands;
+                itemInHands = slotItem;
+                if (itemInHands.Key == 0 || itemInHands.Value == 0)
+                    handsFull = false;
+                return temp;
+            }
+
+        }
+        else
+        {
+            itemInHands = slotItem;
+            if (itemInHands.Key == 0 || itemInHands.Value == 0)
+                handsFull = false;
+            else
+                handsFull = true;
+            return new KeyValuePair<int, int>(0, 0);
         }
     }
 

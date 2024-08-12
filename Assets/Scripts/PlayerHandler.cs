@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class PlayerHandler : MonoBehaviour
 {
@@ -8,12 +10,20 @@ public class PlayerHandler : MonoBehaviour
     public int positionX, positionY;
     public float slowness;
     public float actualX, actualY;
+    public int invLvl = 1;
+    private KeyValuePair<int, int>[] inventory;
+    private GameObject inventoryInstance;
+    private MainSceneHandler mainSceneHandler;
+    public GameObject inventoryPrefab;
     bool diag;
+    int oneFrameBefore;
     void Start()
     {
         gameObject.transform.position = new Vector3(positionX, positionY, -2);
         actualX = (float)positionX;
         actualY = (float)positionY;
+        inventory = new KeyValuePair<int, int>[6+(6*invLvl)];
+        mainSceneHandler = GameObject.Find("MainSceneHandler").GetComponent<MainSceneHandler>();
     }
 
     // Update is called once per frame
@@ -80,4 +90,58 @@ public class PlayerHandler : MonoBehaviour
                     break;
             }
         }
+
+    public void openInventory()
+    {
+        if (inventoryInstance!=null)
+            Destroy(inventoryInstance);
+        else
+        {
+            inventoryInstance = Instantiate(inventoryPrefab, GameObject.Find("Main UI").transform);
+            inventoryInstance.transform.Find("X Button").GetComponent<Button>().onClick.AddListener(openInventory);
+            updateInventoryContents();
+        }
+    }
+
+    public void updateInventoryContents()
+    {
+        Transform[] slots = new Transform[inventoryInstance.transform.Find("Slots").childCount];
+        for(int i = 0; i < slots.Length; i++)
+        {
+            slots[i] = inventoryInstance.transform.Find("Slots").GetChild(i);
+            if (i >= inventory.Length)
+            {
+                slots[i].GetComponent<Button>().interactable = false;
+                slots[i].GetChild(0).gameObject.SetActive(true);
+                slots[i].GetChild(0).GetComponentInChildren<Image>().color = new Color32(255, 0, 0, 155);
+                slots[i].GetChild(0).GetChild(0).gameObject.SetActive(false);
+            }
+            else if (inventory[i].Value == 0)
+            {
+                slots[i].GetComponent<Button>().interactable = true;
+                slots[i].GetChild(0).gameObject.SetActive(false);
+                int iCopy = i;
+                slots[i].GetComponent<Button>().onClick.RemoveAllListeners();
+                slots[i].GetComponent<Button>().onClick.AddListener(() => slotLogic(iCopy));
+            }
+            else
+            {
+                ItemID tempItem = new ItemID(inventory[i].Key);
+                slots[i].GetChild(0).gameObject.SetActive(true);
+                slots[i].GetChild(0).GetComponent<Image>().color = new Color32(255, 255, 255, 255);
+                slots[i].GetChild(0).GetComponent<Image>().sprite = tempItem.getSprite();
+                slots[i].GetChild(0).GetChild(0).gameObject.SetActive(true);
+                slots[i].GetChild(0).GetComponentInChildren<TextMeshProUGUI>().text = inventory[i].Value.ToString();
+                slots[i].GetComponent<Button>().onClick.RemoveAllListeners();
+                int iCopy = i;
+                slots[i].GetComponent<Button>().onClick.AddListener(() => slotLogic(iCopy));
+            }
+        }
+    }
+    private void slotLogic(int i)
+    {
+        Transform slot = inventoryInstance.transform.Find("Slots").GetChild(i);
+        inventory[i] = mainSceneHandler.sendToHands(inventory[i]);
+        updateInventoryContents();
+    }
 }

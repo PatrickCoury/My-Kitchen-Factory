@@ -97,4 +97,9 @@ public class ItemID
     {
         return sprite;
     }
+
+    public int getID()
+    {
+        return ID;
+    }
 }
