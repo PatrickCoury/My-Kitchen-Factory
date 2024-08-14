@@ -10,7 +10,7 @@ using TMPro;
 public class Harvester : MonoBehaviour
 {
 
-    private int rangeX, rangeY, rangeLvl = 3, speedLvl, qtyLvl, costLvl, invLvl = 3;
+    private int rangeX, rangeY, rangeLvl = 3, speedLvl = 1, qtyLvl, costLvl, invLvl = 3;
     public bool showRange;
     public GameObject tilePrefab;
     public KeyValuePair<int, int>[] range;
@@ -268,7 +268,7 @@ public class Harvester : MonoBehaviour
         }
         else
             return;
-        if (harvestTimer >= (720 - (120 * rangeLvl)))
+        if (harvestTimer >= (720 - (120 * speedLvl)))
             harvestTime = true;
     }
 
@@ -414,7 +414,7 @@ public class Harvester : MonoBehaviour
         if (menu == null)
         {
             menu = Instantiate(menuPrefab,GameObject.Find("Main UI").transform);
-            menu.GetComponentInChildren<Slider>().maxValue = 720 - (120 * rangeLvl);
+            menu.GetComponentInChildren<Slider>().maxValue = 720 - (120 * speedLvl);
             menu.transform.Find("X Button").GetComponent<Button>().onClick.AddListener(() => closeMenu());
             menu.transform.Find("Display Range").GetComponent<Button>().onClick.AddListener(() => setShowRange());
             for (int i = 1; i <= 5; i++)

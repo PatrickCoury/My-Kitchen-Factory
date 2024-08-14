@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -12,7 +13,15 @@ public class ItemID
     {
         this.ID = ID;
         stackSize = 50;
-        this.sprite = Resources.LoadAll<Sprite>("TileID")[ID];
+        try
+        {
+            this.sprite = Resources.LoadAll<Sprite>("TileID")[ID];
+        }
+        catch (Exception e)
+        {
+            this.sprite = Resources.LoadAll<Sprite>("TileID")[0];
+        }
+            
         switch (ID)
         {
             case 100:
@@ -84,7 +93,75 @@ public class ItemID
             case 111:
                 this.name = "Fruit";
                 break;
-
+            case 112:
+                this.name = "Steak";
+                break;
+            case 113:
+                this.name = "Roast Beef";
+                break;
+            case 114:
+                this.name = "Cheese";
+                break;
+            case 211:
+                this.name = "Roasted Chicken Breast";
+                break;
+            case 212:
+                this.name = "Chicken Wing";
+                break;
+            case 213:
+                this.name = "Fried Egg";
+                break;
+            case 311:
+                this.name = "Ground Pork";
+                break;
+            case 314:
+                this.name = "Sausage";
+                break;
+            case 312:
+                this.name = "Pork Chops";
+                break;
+            case 313:
+                this.name = "Raw Bacon";
+                break;
+            case 315:
+                this.name = "Cooked Bacon";
+                break;
+            case 511:
+                this.name = "Cooked Salmon";
+                break;
+            case 512:
+                this.name = "Tuna Sashimi";
+                break;
+            case 513:
+                this.name = "Cooked Shrimp";
+                break;
+            case 514:
+                this.name = "Shrimp Cocktail";
+                break;
+            case 124:
+                this.name = "Raw Fries";
+                break;
+            case 134:
+                this.name = "French Fries";
+                break;
+            case 115:
+                this.name = "Cooked Rice";
+                break;
+            case 120:
+                this.name = "Soy Bean Pulp";
+                break;
+            case 130:
+                this.name = "Tofu";
+                break;
+            case 140:
+                this.name = "Fried Tofu";
+                break;
+            case 121:
+                this.name = "Fruit Pulp";
+                break;
+            case 131:
+                this.name = "Jam";
+                break;
         }
     }
 
