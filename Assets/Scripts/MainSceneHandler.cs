@@ -58,6 +58,7 @@ public class MainSceneHandler : MonoBehaviour
             playerHandler.positionY = mapHandler.getClosest(0, mapHandler.mapSizeX / 2, mapHandler.mapSizeY / 2).Value;
             hotbarID[1] = 20;
             hotbarID[2] = 30;
+            hotbarID[3] = 31;
         }
         else if (mapHandler.loadGame)
         {

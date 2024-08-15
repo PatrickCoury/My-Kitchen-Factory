@@ -170,5 +170,8 @@ public class CraftingRecipes
                 break;
         }
     }
-
+    public string getMachineType()
+    {
+        return this.machineType;
+    }
 }

@@ -93,6 +93,11 @@ public class TileID
                 goesOnGrass = true;
                 this.cost = 10;
                 break;
+            case 31:
+                this.name = "Butcher";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
             default:
                 this.name = "grass";
                 isGrass = true;
@@ -120,9 +125,14 @@ public class TileID
         tile.transform.Rotate(new Vector3(0,0,rotation));
         tile.GetComponent<SpriteRenderer>().sprite = sprite;
         tile.name = name;
-        if (this.ID == 30)
+        switch (this.ID)
         {
-            tile.AddComponent<Harvester>();
+            case 30:
+                tile.AddComponent<Harvester>();
+                break;
+            case 31:
+                tile.AddComponent<Butcher>();
+                break;
         }
     }
     public int getCost()

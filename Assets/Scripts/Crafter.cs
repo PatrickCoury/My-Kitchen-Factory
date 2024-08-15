@@ -4,14 +4,18 @@ using UnityEngine;
 
 public abstract class Crafter : MonoBehaviour
 {
-    KeyValuePair<int, int> inputInventory, outputInventory;
-    private int selectedRecipe, craftTimer, speedLvl = 1;
+    List<KeyValuePair<int, int>> inputInventory;
+    KeyValuePair<int, int> outputInventory;
+    public List<CraftingRecipes> craftingRecipes;
+    public GameObject menuPrefab;
+    private int selectedRecipe, craftTimer, speedLvl = 1, maxCraftTime = 720;
     public bool craftTime;
 
     // Start is called before the first frame update
     void Start()
     {
         craftTimer = 0;
+        menuPrefab = Resources.Load("CrafterMenuPrefab") as GameObject;
     }
 
     // Update is called once per frame
@@ -38,8 +42,21 @@ public abstract class Crafter : MonoBehaviour
         }
         else
             return;
-        if (craftTimer >= (720 - (120 * speedLvl)))
+        if (craftTimer >= (maxCraftTime - (120 * speedLvl)))
             craftTime = true;
     }
     public abstract void craft();
+
+
+    public List<CraftingRecipes> getValidRecipes(string machineType)
+    {
+        List<CraftingRecipes> tempList = new List<CraftingRecipes>();
+        for(int i = 100; i<=10000; i++)
+        {
+            CraftingRecipes temp = new CraftingRecipes(i);
+            if (temp.getMachineType() == machineType)
+                tempList.Add(temp);
+        }
+        return tempList;
+    }
 }
