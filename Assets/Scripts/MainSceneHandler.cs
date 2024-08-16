@@ -28,7 +28,7 @@ public class MainSceneHandler : MonoBehaviour
     GameObject cursor;
     Sprite defaultCursor;
     public float cursorRotation = 0;
-    public List<GameObject> harvesterList;
+    public List<GameObject> harvesterList, crafterList;
     private bool paused = false;
     private KeyValuePair<int, int> itemInHands;
     public bool handsFull = false;
@@ -254,6 +254,9 @@ public class MainSceneHandler : MonoBehaviour
                 case 30:
                     harvesterList.Add(tempObject);
                     break;
+                case 31:
+                    crafterList.Add(tempObject);
+                    break;
             }
         }
     }
@@ -378,6 +381,9 @@ public class MainSceneHandler : MonoBehaviour
         {
             case 30:
                 tile.GetComponent<Harvester>().openMenu();
+                break;
+            case 31:
+                tile.GetComponent<Butcher>().openMenu();
                 break;
         }
     }

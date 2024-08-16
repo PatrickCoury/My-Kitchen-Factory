@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class CraftingRecipes
 {
 
-    private List<int> inputs;
+    private List<int> inputs = new List<int>();
     private int output;
     private string machineType;
     private int tier;
@@ -173,5 +173,14 @@ public class CraftingRecipes
     public string getMachineType()
     {
         return this.machineType;
+    }
+
+    public List<int> getInputs()
+    {
+        return this.inputs;
+    }
+    public int getOutput()
+    {
+        return this.output;
     }
 }

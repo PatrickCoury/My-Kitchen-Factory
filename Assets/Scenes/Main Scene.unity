@@ -3403,6 +3403,7 @@ MonoBehaviour:
   hands: {fileID: 328299782}
   cursorRotation: 0
   harvesterList: []
+  crafterList: []
   handsFull: 0
 --- !u!4 &491483767
 Transform:
