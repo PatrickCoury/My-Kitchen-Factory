@@ -59,6 +59,10 @@ public class MainSceneHandler : MonoBehaviour
             hotbarID[1] = 20;
             hotbarID[2] = 30;
             hotbarID[3] = 31;
+            hotbarID[4] = 32;
+            hotbarID[5] = 34;
+            hotbarID[6] = 36;
+            hotbarID[7] = 40;
         }
         else if (mapHandler.loadGame)
         {
@@ -204,9 +208,10 @@ public class MainSceneHandler : MonoBehaviour
         }
         else
         {
+            cursorRotation = 0;
             EventSystem.current.SetSelectedGameObject(hotbarButtons[buttNum]);
             hotbarSelectedButton = buttNum;
-            cursor.transform.GetChild(0).Rotate(0, 0, 180);
+            cursor.transform.GetChild(0).eulerAngles = new Vector3(0, 0, cursorRotation);
         }
     }
 
@@ -255,6 +260,15 @@ public class MainSceneHandler : MonoBehaviour
                     harvesterList.Add(tempObject);
                     break;
                 case 31:
+                case 32:
+                case 33:
+                case 34:
+                case 35:
+                case 36:
+                case 37:
+                case 38:
+                case 39:
+                case 40:
                     crafterList.Add(tempObject);
                     break;
             }
@@ -384,6 +398,33 @@ public class MainSceneHandler : MonoBehaviour
                 break;
             case 31:
                 tile.GetComponent<Butcher>().openMenu();
+                break;
+            case 32:
+                tile.GetComponent<Fryer>().openMenu();
+                break;
+            case 33:
+                tile.GetComponent<Smoker>().openMenu();
+                break;
+            case 34:
+                tile.GetComponent<Squeezer>().openMenu();
+                break;
+            case 35:
+                tile.GetComponent<Stovetop>().openMenu();
+                break;
+            case 36:
+                tile.GetComponent<Grinder>().openMenu();
+                break;
+            case 37:
+                tile.GetComponent<Oven>().openMenu();
+                break;
+            case 38:
+                tile.GetComponent<Fermenter>().openMenu();
+                break;
+            case 39:
+                tile.GetComponent<Steamer>().openMenu();
+                break;
+            case 40:
+                tile.GetComponent<PrepSurface>().openMenu();
                 break;
         }
     }

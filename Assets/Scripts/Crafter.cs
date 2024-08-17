@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-public class Crafter : MonoBehaviour
+public abstract class Crafter : MonoBehaviour
 {
     public List<KeyValuePair<int, int>> inputInventory;
     public KeyValuePair<int, int> outputInventory = new KeyValuePair<int, int>(0,0), fuelInventory = new KeyValuePair<int, int>(0, 0);
@@ -17,6 +17,7 @@ public class Crafter : MonoBehaviour
     // Start is called before the first frame update
     public void Start()
     {
+        inputInventory = new List<KeyValuePair<int, int>>();
         craftTimer = 0;
         menuPrefab = Resources.Load("CrafterMenuPrefab") as GameObject;
         recipeButtonPrefab = Resources.Load("RecipeSelectionButton") as GameObject;
@@ -24,18 +25,22 @@ public class Crafter : MonoBehaviour
     }
 
     // Update is called once per frame
-    void Update()
+    public void Update()
     {
         if (craftTime)
         {
             craft();
         }
-        
+
     }
 
     private void FixedUpdate()
     {
         timeTick();
+    }
+    private void OnDestroy()
+    {
+        closeMenu();
     }
 
     private void timeTick()
@@ -43,6 +48,8 @@ public class Crafter : MonoBehaviour
         if (!craftTime)
         {
             craftTimer++;
+            if (menu != null)
+                menu.transform.Find("Processing Screen").GetChild(0).GetComponent<Slider>().value = craftTimer;
         }
         else
             return;
@@ -55,17 +62,17 @@ public class Crafter : MonoBehaviour
             return;
         int count = 0;
         List<int> alreadyDone = new List<int>();
-        foreach (int input in selectedRecipe.getInputs())
-        {
-            foreach (KeyValuePair<int, int> inputSlot in inputInventory)
+            foreach (int input in selectedRecipe.getInputs())
             {
-                if (inputSlot.Key == input && !alreadyDone.Contains(inputSlot.Key))
+                foreach (KeyValuePair<int, int> inputSlot in inputInventory)
                 {
-                    count++;
-                    alreadyDone.Add(inputSlot.Key);
+                    if (inputSlot.Key == input && !alreadyDone.Contains(inputSlot.Key))
+                    {
+                        count++;
+                        alreadyDone.Add(inputSlot.Key);
+                    }
                 }
             }
-        }
         alreadyDone = new List<int>();
         ItemID tempItem = new ItemID(selectedRecipe.getOutput());
         if (selectedRecipe.getInputs().Count == count && (selectedRecipe.getOutput() == outputInventory.Key || outputInventory.Key == 0) && outputInventory.Value < tempItem.getStackSize())
@@ -92,7 +99,8 @@ public class Crafter : MonoBehaviour
                 }
             }
         }
-        updateInvDisplay();
+        if(menu!=null)
+            updateInvDisplay();
     }
 
 
@@ -109,9 +117,12 @@ public class Crafter : MonoBehaviour
     }
     public void openMenu()
     {
+        
         if (menu == null)
         {
+            
             menu = Instantiate(menuPrefab, GameObject.Find("Main UI").transform);
+            updateDisplayName();
             menu.transform.Find("X Button").GetComponent<Button>().onClick.AddListener(() => closeMenu());
             if (selectedRecipe != null)
             {
@@ -122,20 +133,19 @@ public class Crafter : MonoBehaviour
                 menu.transform.Find("Recipe Selection Screen").gameObject.SetActive(false);
                 for (int i = 1; i <= 4; i++)
                 {
-                    Transform temp = menu.transform.Find("Input Button " + i);
+                    Transform temp = processScreen.transform.Find("Input Button " + i);
                     if (i > invLvl)
                     {
                         temp.GetComponent<Button>().interactable = false;
                         temp.GetComponent<Image>().color = new Color32(255, 0, 0, 255);
                     }
                 }
-                if(requiredFuel==0)
-
-                updateInvDisplay();
+                
             }
             else
                 openRecipeMenu();
         }
+        updateInvDisplay();
     }
     public void closeMenu()
     {
@@ -143,6 +153,7 @@ public class Crafter : MonoBehaviour
     }
     public void updateInvDisplay()
     {
+        
         ItemID tempItem;
         Transform display;
         Transform processScreen = menu.transform.Find("Processing Screen");
@@ -150,47 +161,83 @@ public class Crafter : MonoBehaviour
         {
             processScreen.transform.Find("Input Button " + i).GetChild(0).gameObject.SetActive(false);
             processScreen.transform.Find("Input Button " + i).GetComponent<Button>().onClick.RemoveAllListeners();
+            int iCopy = i - 1;
+            processScreen.transform.Find("Input Button " + i).GetComponent<Button>().onClick.RemoveAllListeners();
+            processScreen.transform.Find("Input Button " + i).GetComponent<Button>().onClick.AddListener(() => inputSlotLogic(iCopy));
         }
-        for (int i = 1; i <= inputInventory.Count; i++)
-        {
-            if (inputInventory[i - 1].Value > 0)
+            for (int i = 1; i <= inputInventory.Count; i++)
             {
-                tempItem = new ItemID(inputInventory[i - 1].Key);
-                display = processScreen.transform.Find("Input Button " + i).GetChild(0);
-                display.GetComponent<Image>().sprite = tempItem.getSprite();
-                display.GetChild(0).GetComponent<TextMeshProUGUI>().text = inputInventory[i - 1].Value.ToString();
-                display.gameObject.SetActive(true);
-                int iCopy = i - 1;
-                processScreen.transform.Find("Input Button " + i).GetComponent<Button>().onClick.AddListener(() => inputSlotLogic(iCopy));
+                if (inputInventory[i - 1].Value > 0)
+                {
+                    tempItem = new ItemID(inputInventory[i - 1].Key);
+                    display = processScreen.transform.Find("Input Button " + i).GetChild(0);
+                    display.GetComponent<Image>().sprite = tempItem.getSprite();
+                    display.GetChild(0).GetComponent<TextMeshProUGUI>().text = inputInventory[i - 1].Value.ToString();
+                    display.gameObject.SetActive(true);
+                    
+                }
             }
-        }
-        tempItem = new ItemID(outputInventory.Key);
-        display = processScreen.transform.Find("Output Button").GetChild(0);
-        display.GetComponent<Image>().sprite = tempItem.getSprite();
-        display.GetChild(0).GetComponent<TextMeshProUGUI>().text = outputInventory.Value.ToString();
-        display.gameObject.SetActive(true);
+        processScreen.transform.Find("Output Button").GetComponent<Button>().onClick.RemoveAllListeners();
         processScreen.transform.Find("Output Button").GetComponent<Button>().onClick.AddListener(outputSlotLogic);
+        display = processScreen.transform.Find("Output Button").GetChild(0);
+        if (outputInventory.Value != 0)
+        {
+            tempItem = new ItemID(outputInventory.Key);
+            display.GetComponent<Image>().sprite = tempItem.getSprite();
+            display.GetChild(0).GetComponent<TextMeshProUGUI>().text = outputInventory.Value.ToString();
+            display.gameObject.SetActive(true);
+           
+        }
+        else
+            display.gameObject.SetActive(false);
+        if (requiredFuel == 0)
+            processScreen.transform.Find("Fuel Button").gameObject.SetActive(false);
+        else
+        {
+            processScreen.transform.Find("Fuel Button").gameObject.SetActive(true);
+            processScreen.transform.Find("Fuel Button").GetComponent<Button>().onClick.RemoveAllListeners();
+            processScreen.transform.Find("Fuel Button").GetComponent<Button>().onClick.AddListener(fuelSlotLogic);
+
+        }
+        if (fuelInventory.Value != 0)
+        {
+            tempItem = new ItemID(outputInventory.Key);
+            display = processScreen.transform.Find("Fuel Button").GetChild(0);
+            display.GetComponent<Image>().sprite = tempItem.getSprite();
+            display.GetChild(0).GetComponent<TextMeshProUGUI>().text = fuelInventory.Value.ToString();
+            display.gameObject.SetActive(true);
+        }
+
     }
 
     public void inputSlotLogic(int i)
     {
-        KeyValuePair<int, int> temp = inputInventory[i];
-        inputInventory.RemoveAt(i);
+        KeyValuePair<int, int> temp;
+        if (inputInventory.Count <= i)
+            temp = new KeyValuePair<int, int>(0, 0);
+        else
+        {
+            temp = inputInventory[i];
+            inputInventory.RemoveAt(i);
+        }
         inputInventory.Add(mainSceneHandler.sendToHands(temp));
         for (i = 0; i < inputInventory.Count; i++)
             if (inputInventory[i].Value == 0)
                 inputInventory.RemoveAt(i);
         updateInvDisplay();
     }
+
+    public void fuelSlotLogic()
+    {
+        fuelInventory = mainSceneHandler.sendToHands(fuelInventory);
+        updateInvDisplay();
+    }
+
     public void outputSlotLogic()
     {
         if (!mainSceneHandler.handsFull)
-        {
-            KeyValuePair<int, int> temp = outputInventory;
-            outputInventory = new KeyValuePair<int, int>(0, 0);
-            outputInventory = mainSceneHandler.sendToHands(temp);
-            updateInvDisplay();
-        }
+            outputInventory = mainSceneHandler.sendToHands(outputInventory);
+        updateInvDisplay();
     }
 
     public void selectRecipe(CraftingRecipes recipe)
@@ -211,7 +258,7 @@ public class Crafter : MonoBehaviour
         Transform recipeScreen = menu.transform.Find("Recipe Selection Screen");
         recipeScreen.gameObject.SetActive(true);
         menu.transform.Find("Processing Screen").gameObject.SetActive(false);
-        int xCount = 1;
+        int xCount = 0;
         int yCount = 1;
         foreach (CraftingRecipes recipe in craftingRecipes)
         {
@@ -225,15 +272,17 @@ public class Crafter : MonoBehaviour
                 xCount = 1;
                 yCount++;
             }
-            tempObject.transform.position = new Vector2(-285, 150);
+            tempObject.transform.localPosition = new Vector2(-285, 150);
             for (int i = 1; i <= xCount; i++)
-                tempObject.transform.position = new Vector2(tempObject.transform.position.x + 95, tempObject.transform.position.y);
+                tempObject.transform.localPosition = new Vector2(tempObject.transform.localPosition.x + 95, tempObject.transform.localPosition.y);
             for (int i = 1; i <= yCount; i++)
-                tempObject.transform.position = new Vector2(tempObject.transform.position.x, tempObject.transform.position.y - 90);
+                tempObject.transform.localPosition = new Vector2(tempObject.transform.localPosition.x, tempObject.transform.localPosition.y - 90);
             ItemID tempItem = new ItemID(recipe.getOutput());
             tempObject.GetComponent<Image>().sprite = tempItem.getSprite();
             CraftingRecipes recipeClone = recipe;
             tempObject.GetComponent<Button>().onClick.AddListener(() => selectRecipe(recipeClone));
         }
     }
+
+    public abstract void updateDisplayName();
 }

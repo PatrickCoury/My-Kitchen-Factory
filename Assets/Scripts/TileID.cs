@@ -98,6 +98,51 @@ public class TileID
                 goesOnGrass = true;
                 this.cost = 10;
                 break;
+            case 32:
+                this.name = "Fryer";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 33:
+                this.name = "Smoker";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 34:
+                this.name = "Squeezer";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 35:
+                this.name = "Grinder";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 36:
+                this.name = "Stovetop";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 37:
+                this.name = "Oven";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 38:
+                this.name = "Fermenter";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 39:
+                this.name = "Steamer";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
+            case 40:
+                this.name = "Prep Surface";
+                goesOnGrass = true;
+                this.cost = 10;
+                break;
             default:
                 this.name = "grass";
                 isGrass = true;
@@ -133,6 +178,34 @@ public class TileID
             case 31:
                 tile.AddComponent<Butcher>();
                 break;
+            case 32:
+                tile.AddComponent<Fryer>();
+                break;
+            case 33:
+                tile.AddComponent<Smoker>();
+                break;
+            case 34:
+                tile.AddComponent<Squeezer>();
+                break;
+            case 35:
+                tile.AddComponent<Stovetop>();
+                break;
+            case 36:
+                tile.AddComponent<Grinder>();
+                break;
+            case 37:
+                tile.AddComponent<Oven>();
+                break;
+            case 38:
+                tile.AddComponent<Fermenter>();
+                break;
+            case 39:
+                tile.AddComponent<Steamer>();
+                break;
+            case 40:
+                tile.AddComponent<PrepSurface>();
+                break;
+
         }
     }
     public int getCost()

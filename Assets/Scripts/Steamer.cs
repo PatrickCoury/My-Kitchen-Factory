@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
-public class Butcher : Crafter
+public class Steamer : Crafter
 {
     // Start is called before the first frame update
     new void Start()
     {
         base.Start();
-        craftingRecipes = getValidRecipes("Butcher");
+        craftingRecipes = getValidRecipes("Steamer");
     }
 
     // Update is called once per frame
@@ -20,6 +20,6 @@ public class Butcher : Crafter
 
     public override void updateDisplayName()
     {
-        menu.transform.Find("Crafter").GetComponent<TextMeshProUGUI>().text = "Butcher";
+        menu.transform.Find("Crafter").GetComponent<TextMeshProUGUI>().text = "Steamer";
     }
 }

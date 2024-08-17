@@ -12,7 +12,7 @@ using UnityEngine;
 public class MapHandler : MonoBehaviour
 {
     public int waterSeeds=3, grassSeeds=7,cowSeeds=2,chickenSeeds=2,pigSeeds=2,fishSeeds=2, cowAmount=3, chickenAmount=3, pigAmount=3,fishAmount=3, smoothness=2;//waterSeeds+grassSeeds=10, other seeds 1-4 amounts go 1-5, smoothness 1-3
-    public int mapSizeX=64,mapSizeY=36;
+    public int mapSizeX=1000,mapSizeY=1000;
     public TileID[,] tileMap, buildMap;
     public GameObject[,] instanceGrid;
     public GameObject tilePrefab;
